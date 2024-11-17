@@ -1,34 +1,31 @@
-//! Clients events related logic and type definitions. For example, receival of client events from applications throught the HTTP gateway.
+//! Client events related logic and type definitions. For example, receiving client events from applications through the HTTP gateway.
 
-use freenet_stdlib::client_api::ClientRequest;
-use freenet_stdlib::client_api::{ClientError, ContractResponse, HostResponse};
+use freenet_stdlib::client_api::{ClientError, ClientRequest, ContractResponse, HostResponse};
 use futures::future::BoxFuture;
-use std::fmt::Debug;
-use std::fmt::Display;
-use std::sync::atomic::AtomicUsize;
-use std::sync::Arc;
-
 use serde::{Deserialize, Serialize};
+use std::{
+    fmt::{Debug, Display},
+    sync::{atomic::AtomicUsize, Arc},
+};
 use tokio::sync::mpsc::UnboundedSender;
 
 pub(crate) mod combinator;
 #[cfg(feature = "websocket")]
 pub(crate) mod websocket;
+#[cfg(test)]
+mod test;
 
+// Type aliases
 pub(crate) type BoxedClient = Box<dyn ClientEventsProxy + Send + 'static>;
 pub type HostResult = Result<HostResponse, ClientError>;
+type HostIncomingMsg = Result<OpenRequest<'static>, ClientError>;
+
+// Client identification
+static CLIENT_ID: AtomicUsize = AtomicUsize::new(1);
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[repr(transparent)]
 pub struct ClientId(usize);
-
-impl From<ClientId> for usize {
-    fn from(val: ClientId) -> Self {
-        val.0
-    }
-}
-
-static CLIENT_ID: AtomicUsize = AtomicUsize::new(1);
 
 impl ClientId {
     pub const FIRST: Self = ClientId(0);
@@ -38,14 +35,19 @@ impl ClientId {
     }
 }
 
+impl From<ClientId> for usize {
+    fn from(val: ClientId) -> Self {
+        val.0
+    }
+}
+
 impl Display for ClientId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
     }
 }
 
-type HostIncomingMsg = Result<OpenRequest<'static>, ClientError>;
-
+// Authentication
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct AuthToken(#[serde(deserialize_with = "AuthToken::deser_auth_token")] Arc<str>);
 
@@ -62,6 +64,14 @@ impl AuthToken {
         let token_str = bs58::encode(token).into_string();
         AuthToken::from(token_str)
     }
+
+    fn deser_auth_token<'de, D>(deser: D) -> Result<Arc<str>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let value = <String as Deserialize>::deserialize(deser)?;
+        Ok(value.into())
+    }
 }
 
 impl std::ops::Deref for AuthToken {
@@ -72,22 +82,13 @@ impl std::ops::Deref for AuthToken {
     }
 }
 
-impl AuthToken {
-    fn deser_auth_token<'de, D>(deser: D) -> Result<Arc<str>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let value = <String as Deserialize>::deserialize(deser)?;
-        Ok(value.into())
-    }
-}
-
 impl From<String> for AuthToken {
     fn from(value: String) -> Self {
         Self(value.into())
     }
 }
 
+// Request handling
 #[non_exhaustive]
 pub struct OpenRequest<'a> {
     pub client_id: ClientId,
@@ -96,30 +97,20 @@ pub struct OpenRequest<'a> {
     pub token: Option<AuthToken>,
 }
 
-impl Display for OpenRequest<'_> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "client request {{ client: {}, req: {} }}",
-            &self.client_id, &*self.request
-        )
-    }
-}
-
 impl<'a> OpenRequest<'a> {
-    pub fn into_owned(self) -> OpenRequest<'static> {
-        OpenRequest {
-            request: Box::new(self.request.into_owned()),
-            ..self
-        }
-    }
-
     pub fn new(id: ClientId, request: Box<ClientRequest<'a>>) -> Self {
         Self {
             client_id: id,
             request,
             notification_channel: None,
             token: None,
+        }
+    }
+
+    pub fn into_owned(self) -> OpenRequest<'static> {
+        OpenRequest {
+            request: Box::new(self.request.into_owned()),
+            ..self
         }
     }
 
@@ -134,6 +125,17 @@ impl<'a> OpenRequest<'a> {
     }
 }
 
+impl Display for OpenRequest<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "client request {{ client: {}, req: {} }}",
+            &self.client_id, &*self.request
+        )
+    }
+}
+
+// Core trait
 pub trait ClientEventsProxy {
     /// # Cancellation Safety
     /// This future must be safe to cancel.
@@ -146,8 +148,6 @@ pub trait ClientEventsProxy {
         response: Result<HostResponse, ClientError>,
     ) -> BoxFuture<Result<(), ClientError>>;
 }
-
-pub(crate) mod test {
     use std::{
         collections::{HashMap, HashSet},
         time::Duration,
