@@ -613,4 +613,3 @@ pub trait ClientEventsProxy {
             assert_eq!(first_state.existing_contracts, state.existing_contracts);
         }
     }
-}
