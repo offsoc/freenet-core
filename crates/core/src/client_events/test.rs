@@ -14,9 +14,13 @@ use tokio::sync::watch::Receiver;
 use tokio::sync::Mutex;
 use tokio_tungstenite::tungstenite::Message;
 use tokio_tungstenite::{MaybeTlsStream, WebSocketStream};
+use tracing;
 
-use crate::{node::testing_impl::EventId, transport::TransportPublicKey};
-use super::*;
+use crate::{
+    client_events::{ClientError, ClientEventsProxy, ClientId, ClientRequest, HostResponse, OpenRequest},
+    node::testing_impl::EventId,
+    transport::TransportPublicKey,
+};
 
 pub struct MemoryEventsGen<R = rand::rngs::SmallRng> {
     key: TransportPublicKey,

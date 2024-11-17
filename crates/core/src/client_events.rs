@@ -13,7 +13,7 @@ pub(crate) mod combinator;
 #[cfg(feature = "websocket")]
 pub(crate) mod websocket;
 #[cfg(test)]
-mod test;
+pub mod test;
 
 // Type aliases
 pub(crate) type BoxedClient = Box<dyn ClientEventsProxy + Send + 'static>;
@@ -167,7 +167,6 @@ pub trait ClientEventsProxy {
 
     use crate::{node::testing_impl::EventId, transport::TransportPublicKey};
 
-    use super::*;
 
     pub struct MemoryEventsGen<R = rand::rngs::SmallRng> {
         key: TransportPublicKey,
