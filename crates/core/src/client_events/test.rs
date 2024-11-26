@@ -17,7 +17,9 @@ use tokio_tungstenite::{MaybeTlsStream, WebSocketStream};
 use tracing;
 
 use crate::{
-    client_events::{ClientError, ClientEventsProxy, ClientId, ClientRequest, HostResponse, OpenRequest},
+    client_events::{
+        ClientError, ClientEventsProxy, ClientId, ClientRequest, HostResponse, OpenRequest,
+    },
     node::testing_impl::EventId,
     transport::TransportPublicKey,
 };
@@ -85,10 +87,7 @@ where
 
 impl MemoryEventsGen {
     #[cfg(test)]
-    pub fn new(
-        signal: Receiver<(EventId, TransportPublicKey)>,
-        key: TransportPublicKey,
-    ) -> Self {
+    pub fn new(signal: Receiver<(EventId, TransportPublicKey)>, key: TransportPublicKey) -> Self {
         Self {
             signal,
             key,
@@ -161,10 +160,8 @@ where
         _id: ClientId,
         response: Result<HostResponse, ClientError>,
     ) -> BoxFuture<'_, Result<(), ClientError>> {
-        if let Ok(HostResponse::ContractResponse(ContractResponse::GetResponse {
-            key,
-            ..
-        })) = response
+        if let Ok(HostResponse::ContractResponse(ContractResponse::GetResponse { key, .. })) =
+            response
         {
             self.internal_state
                 .as_mut()
@@ -258,10 +255,8 @@ where
         _id: ClientId,
         response: Result<HostResponse, ClientError>,
     ) -> BoxFuture<'_, Result<(), ClientError>> {
-        if let Ok(HostResponse::ContractResponse(ContractResponse::GetResponse {
-            key,
-            ..
-        })) = response
+        if let Ok(HostResponse::ContractResponse(ContractResponse::GetResponse { key, .. })) =
+            response
         {
             self.memory_event_generator
                 .internal_state
@@ -311,10 +306,7 @@ pub trait RandomEventGenerator: Send + 'static {
     ///
     /// To guarantee this make sure that calls to this rng are always executed in the same order
     /// at all peers.
-    fn gen_event(
-        &mut self,
-        state: &mut InternalGeneratorState,
-    ) -> Option<ClientRequest<'static>> {
+    fn gen_event(&mut self, state: &mut InternalGeneratorState) -> Option<ClientRequest<'static>> {
         while state.current_iteration < state.max_iterations {
             state.current_iteration += 1;
             let for_this_peer = self.gen_range(0..state.num_peers) == state.this_peer;

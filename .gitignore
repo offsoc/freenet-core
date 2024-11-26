@@ -25,3 +25,4 @@ config.toml
 .rustc*
 
 rustc-ice*.txt
+.aider*
