@@ -345,8 +345,8 @@ impl<S: Socket> UdpPacketsListener<S> {
 
                             self.remote_connections.insert(remote_addr, inbound_remote_connection);
 
-                            match self.new_connection_notifier
-                            .try_send(PeerConnection::new(outbound_remote_conn)) {
+                            tracing::info!(%remote_addr, "connection at gateway established");
+                            match self.new_connection_notifier.try_send(PeerConnection::new(outbound_remote_conn)) {
                                 Ok(_) => {}
                                 Err(mpsc::error::TrySendError::Full(pending_conn)) => {
                                     tracing::error!(%remote_addr, "gateway connection established but channel is full");
@@ -377,7 +377,7 @@ impl<S: Socket> UdpPacketsListener<S> {
                     match res.expect("task shouldn't panic") {
                         Ok((outbound_remote_conn, inbound_remote_connection)) => {
                             if let Some((_, result_sender)) = ongoing_connections.remove(&outbound_remote_conn.remote_addr) {
-                                tracing::debug!(remote_addr = %outbound_remote_conn.remote_addr, "connection established");
+                                tracing::info!(remote_addr = %outbound_remote_conn.remote_addr, "remote connection established");
                                 self.remote_connections.insert(outbound_remote_conn.remote_addr, inbound_remote_connection);
                                 let _ = result_sender.send(Ok(outbound_remote_conn)).map_err(|_| {
                                     tracing::error!("failed sending back peer connection");

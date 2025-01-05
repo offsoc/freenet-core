@@ -424,7 +424,12 @@ impl Ring {
     }
 
     pub async fn add_connection(&self, loc: Location, peer: PeerId, was_reserved: bool) {
-        tracing::info!(%peer, this = ?self.connection_manager.get_peer_key(), %was_reserved, "Adding connection to peer");
+        tracing::info!(
+            %peer,
+            this = ?self.connection_manager.get_peer_key(),
+            %was_reserved,
+            "Successful connection, adding connection to peer"
+        );
         self.connection_manager
             .add_connection(loc, peer.clone(), was_reserved);
         self.event_register
