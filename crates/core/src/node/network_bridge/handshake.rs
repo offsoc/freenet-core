@@ -11,8 +11,7 @@ use tracing::{instrument, Instrument};
 use futures::{future::BoxFuture, stream::FuturesUnordered, FutureExt, StreamExt, TryFutureExt};
 use tokio::sync::mpsc::{self};
 
-use super::handshake::errors::HandshakeError;
-use super::handshake::errors::decode_msg;
+use super::errors::{HandshakeError, decode_msg}; 
 
 use crate::{
     dev_tool::{Location, PeerId, Transaction},

@@ -25,9 +25,9 @@ use tokio::time::timeout;
 use tracing::Instrument;
 
 use crate::dev_tool::Location;
-use crate::node::network_bridge::handshake::{
-    Event as HandshakeEvent, ForwardInfo, HandshakeError, HandshakeHandler, HanshakeHandlerMsg,
-    OutboundMessage,
+use crate::node::network_bridge::{
+    handshake::{Event as HandshakeEvent, ForwardInfo, HandshakeHandler, HanshakeHandlerMsg, OutboundMessage},
+    errors::HandshakeError,
 };
 use crate::node::PeerId;
 use crate::transport::{
