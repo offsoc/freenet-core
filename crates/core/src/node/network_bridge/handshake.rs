@@ -11,6 +11,8 @@ use tracing::{instrument, Instrument};
 use futures::{future::BoxFuture, stream::FuturesUnordered, FutureExt, StreamExt, TryFutureExt};
 use tokio::sync::mpsc::{self};
 
+use super::handshake::errors::{HandshakeError, decode_msg};
+
 use crate::{
     dev_tool::{Location, PeerId, Transaction},
     message::{InnerMessage, NetMessage, NetMessageV1},
@@ -37,19 +39,6 @@ pub(super) struct ForwardInfo {
     pub msg: NetMessage,
 }
 
-#[derive(Debug, thiserror::Error)]
-pub(super) enum HandshakeError {
-    #[error("channel closed")]
-    ChannelClosed,
-    #[error("connection closed to {0}")]
-    ConnectionClosed(SocketAddr),
-    #[error(transparent)]
-    Serialization(#[from] Box<bincode::ErrorKind>),
-    #[error(transparent)]
-    TransportError(#[from] TransportError),
-    #[error("receibed an unexpected message at this point: {0}")]
-    UnexpectedMessage(Box<NetMessage>),
-}
 
 #[derive(Debug)]
 pub(super) enum Event {
@@ -1074,10 +1063,6 @@ impl TransientConnection {
     }
 }
 
-#[inline(always)]
-fn decode_msg(data: &[u8]) -> Result<NetMessage> {
-    bincode::deserialize(data).map_err(HandshakeError::Serialization)
-}
 
 #[cfg(test)]
 mod tests {
