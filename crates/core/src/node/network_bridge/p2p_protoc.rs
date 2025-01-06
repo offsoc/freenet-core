@@ -26,8 +26,10 @@ use tracing::Instrument;
 
 use crate::dev_tool::Location;
 use crate::node::network_bridge::{
-    handshake::{Event as HandshakeEvent, ForwardInfo, HandshakeHandler, HanshakeHandlerMsg, OutboundMessage},
     errors::HandshakeError,
+    handshake::{
+        Event as HandshakeEvent, ForwardInfo, HandshakeHandler, HanshakeHandlerMsg, OutboundMessage,
+    },
 };
 use crate::node::PeerId;
 use crate::transport::{

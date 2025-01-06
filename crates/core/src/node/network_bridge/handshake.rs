@@ -11,7 +11,7 @@ use tracing::{instrument, Instrument};
 use futures::{future::BoxFuture, stream::FuturesUnordered, FutureExt, StreamExt, TryFutureExt};
 use tokio::sync::mpsc::{self};
 
-use super::errors::{HandshakeError, decode_msg}; 
+use super::errors::{decode_msg, HandshakeError};
 
 use crate::{
     dev_tool::{Location, PeerId, Transaction},
@@ -38,7 +38,6 @@ pub(super) struct ForwardInfo {
     pub target: PeerId,
     pub msg: NetMessage,
 }
-
 
 #[derive(Debug)]
 pub(super) enum Event {
@@ -1062,7 +1061,6 @@ impl TransientConnection {
         false
     }
 }
-
 
 #[cfg(test)]
 mod tests {

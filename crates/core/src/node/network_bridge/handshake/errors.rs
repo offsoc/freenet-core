@@ -3,7 +3,7 @@ use crate::message::NetMessage;
 use crate::transport::TransportError;
 
 #[derive(Debug, thiserror::Error)]
-pub(super) enum HandshakeError {
+pub enum HandshakeError {
     #[error("channel closed")]
     ChannelClosed,
     #[error("connection closed to {0}")]
