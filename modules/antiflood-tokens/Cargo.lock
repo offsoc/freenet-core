@@ -351,7 +351,7 @@ dependencies = [
 
 [[package]]
 name = "freenet-macros"
-version = "0.0.5"
+version = "0.1.0-rc1"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -360,7 +360,7 @@ dependencies = [
 
 [[package]]
 name = "freenet-stdlib"
-version = "0.0.8"
+version = "0.1.0-rc1"
 dependencies = [
  "arbitrary",
  "bincode",
@@ -907,9 +907,9 @@ checksum = "adad44e29e4c806119491a7f06f03de4d1af22c3a680dd47f1e6e179439d1f56"
 
 [[package]]
 name = "rsa"
-version = "0.9.6"
+version = "0.9.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5d0e5124fcb30e76a7e79bfee683a2746db83784b86289f6251b54b7950a0dfc"
+checksum = "47c75d7c5c6b673e58bf54d8544a9f432e3a925b0e80f7cd3602ab5c50c55519"
 dependencies = [
  "const-oid",
  "digest",
